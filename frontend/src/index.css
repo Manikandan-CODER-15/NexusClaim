@@ -1,17 +1,11 @@
 @import "tailwindcss";
+@source "../index.html";
+@source "./**/*.{js,ts,jsx,tsx}";
 
-/* Enable dark mode via class strategy */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Base layer overrides */
 @layer base {
   html {
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  body {
-    @apply bg-slate-50 text-slate-900;
-  }
-  .dark body {
-    @apply bg-slate-900 text-slate-100;
   }
 }
