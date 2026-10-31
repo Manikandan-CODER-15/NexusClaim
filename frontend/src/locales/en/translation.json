@@ -1,0 +1,49 @@
+{
+  "login": {
+    "title": "Sign In",
+    "email": "Email",
+    "password": "Password",
+    "remember": "Remember me",
+    "signIn": "Sign In",
+    "error": "Invalid credentials"
+  },
+  "howToUse": {
+    "title": "How to use",
+    "step1": "Sign in using a demo role",
+    "step2": "Open an existing claim or create a new one",
+    "step3": "Upload evidence (photos, statement, estimate, policy, reports)",
+    "step4": "Run the AI investigation and watch the six agents",
+    "step5": "Explore the evidence graph and findings",
+    "step6": "Inject new evidence to see adaptive re‑evaluation",
+    "step7": "Review findings and record a human decision",
+    "step8": "Generate and download the investigation report"
+  },
+  "menu": {
+    "dashboard": "Dashboard",
+    "claims": "Claims",
+    "evidence": "Evidence",
+    "findings": "Findings",
+    "graph": "Evidence Graph",
+    "review": "Review",
+    "admin": "Admin",
+    "settings": "Settings",
+    "reports": "Reports"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "language": {
+    "english": "English",
+    "tamil": "தமிழ்",
+    "hindi": "हिन्दी"
+  },
+  "demoAccounts": {
+    "admin": {"email": "admin@nexusclaim.demo", "password": "Admin@123", "role": "Admin"},
+    "endUser": {"email": "enduser@nexusclaim.demo", "password": "User@123", "role": "End User"},
+    "investigator": {"email": "investigator@nexusclaim.demo", "password": "Invest@123", "role": "Investigator"},
+    "manager": {"email": "manager@nexusclaim.demo", "password": "Manager@123", "role": "Manager"},
+    "risk": {"email": "risk@nexusclaim.demo", "password": "Risk@123", "role": "Fraud & Risk Analyst"}
+  }
+}
+

@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom dark/light palette utilities */
+@layer utilities {
+  .bg-canvas {
+    @apply bg-canvas-dark dark:bg-canvas-light;
+  }
+
+  .bg-card {
+    @apply bg-card-dark dark:bg-card-light;
+  }
+
+  .border-primary {
+    @apply border-primary-dark dark:border-primary-light;
+  }
+
+  .text-primary {
+    @apply text-primary-dark dark:text-primary-light;
+  }
+}
