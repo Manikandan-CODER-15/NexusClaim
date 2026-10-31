@@ -58,3 +58,6 @@ htmlcov/
 Thumbs.db
 .vscode/
 .idea/
+
+.vite/
+frontend/.vite/
