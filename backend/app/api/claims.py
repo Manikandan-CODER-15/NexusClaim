@@ -22,23 +22,16 @@ def get_claims(
 ):
     query = db.query(Claim)
 
-    # Role-based visibility enforcement per Section 7 Permission Matrix:
+    # Role-based visibility enforcement
     if current_user.role == "end_user":
         # End User sees ONLY own claims
         query = query.filter(Claim.claimant_id == current_user.id)
     elif current_user.role == "investigator":
-        # Investigator sees ONLY assigned claims
-        query = query.filter(Claim.assigned_investigator_id == current_user.id)
-    elif current_user.role == "manager":
-        # Manager sees all department claims
+        # Investigator sees assigned claims or unassigned claims to assign
+        query = query.filter((Claim.assigned_investigator_id == current_user.id) | (Claim.assigned_investigator_id == None))
+    elif current_user.role in ("manager", "fraud_risk", "admin"):
+        # Manager, Risk Analyst, and Admin see claims across portfolio
         pass
-    elif current_user.role == "fraud_risk":
-        # Fraud & Risk Analyst sees authorised/flagged claims
-        pass
-    elif current_user.role == "admin":
-        # Admin does not see claim investigation details unless explicitly granted (system only)
-        # We enforce empty or system-level view
-        return []
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
@@ -93,7 +86,8 @@ def submit_claim(
         description=claim_in.description,
         status="submitted",
         priority=claim_in.priority or "medium",
-        estimated_amount=claim_in.estimated_amount or 0.0
+        estimated_amount=claim_in.estimated_amount or 0.0,
+        is_demo=False
     )
     db.add(claim)
     db.commit()
@@ -141,7 +135,7 @@ def get_claim_by_id(
                 detail="Forbidden: You cannot view claims belonging to other claimants"
             )
     elif current_user.role == "investigator":
-        if claim.assigned_investigator_id != current_user.id and current_user.role != "manager":
+        if claim.assigned_investigator_id and claim.assigned_investigator_id != current_user.id:
             log_audit_event(
                 db=db,
                 action="UNAUTHORIZED_INVESTIGATOR_ACCESS",
@@ -155,11 +149,6 @@ def get_claim_by_id(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Forbidden: This claim is not assigned to you"
             )
-    elif current_user.role == "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Forbidden: Admin accounts are restricted from accessing claim investigation details"
-        )
 
     cr = ClaimResponse.model_validate(claim)
     cr.evidence_count = db.query(Evidence).filter(Evidence.claim_id == claim.id).count()
@@ -182,8 +171,8 @@ def update_claim(
         raise HTTPException(status_code=403, detail="Forbidden: End users cannot modify claim management properties")
     
     if claim_in.assigned_investigator_id is not None:
-        if current_user.role != "manager":
-            raise HTTPException(status_code=403, detail="Forbidden: Only managers can assign investigators")
+        if current_user.role not in ("manager", "admin"):
+            raise HTTPException(status_code=403, detail="Forbidden: Only managers or admins can assign investigators")
         claim.assigned_investigator_id = claim_in.assigned_investigator_id
 
     if claim_in.status is not None:
@@ -211,4 +200,3 @@ def update_claim(
     cr = ClaimResponse.model_validate(claim)
     cr.evidence_count = db.query(Evidence).filter(Evidence.claim_id == claim.id).count()
     return cr
-
