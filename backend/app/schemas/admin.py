@@ -64,3 +64,12 @@ class AuditLogResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class OverviewResponse(BaseModel):
+    total_claims: int
+    active_investigations: int
+    pending_reviews: int
+    completed: int
+    category_distribution: List[Dict[str, Any]] = []
+    investigation_trend: List[Dict[str, Any]] = []

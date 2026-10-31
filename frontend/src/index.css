@@ -1,22 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Custom dark/light palette utilities */
-@layer utilities {
-  .bg-canvas {
-    @apply bg-canvas-dark dark:bg-canvas-light;
+/* Enable dark mode via class strategy */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Base layer overrides */
+@layer base {
+  html {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
-
-  .bg-card {
-    @apply bg-card-dark dark:bg-card-light;
+  body {
+    @apply bg-slate-50 text-slate-900;
   }
-
-  .border-primary {
-    @apply border-primary-dark dark:border-primary-light;
-  }
-
-  .text-primary {
-    @apply text-primary-dark dark:text-primary-light;
+  .dark body {
+    @apply bg-slate-900 text-slate-100;
   }
 }

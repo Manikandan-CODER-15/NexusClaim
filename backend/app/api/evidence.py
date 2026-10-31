@@ -77,3 +77,34 @@ async def upload_evidence(
     )
     return {"id": evidence.id, "file_name": evidence.file_name, "category": evidence.category}
 
+
+
+@router.get("/claims/{claim_id}")
+def get_claim_evidence(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    if current_user.role == "end_user" and claim.claimant_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    items = db.query(Evidence).filter(Evidence.claim_id == claim_id).order_by(Evidence.created_at.desc()).all()
+    return [
+        {
+            "id": e.id,
+            "claim_id": e.claim_id,
+            "file_name": e.file_name,
+            "file_path": e.file_path,
+            "file_hash": e.file_hash,
+            "file_size": e.file_size,
+            "mime_type": e.mime_type,
+            "category": e.category,
+            "source_label": e.source_label,
+            "created_at": e.created_at
+        }
+        for e in items
+    ]

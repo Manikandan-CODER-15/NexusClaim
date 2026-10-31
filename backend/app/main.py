@@ -11,7 +11,10 @@ load_dotenv(dotenv_path=env_path)
 
 from backend.app.database.session import engine, Base
 from backend.app.database.seed import seed_database
-from backend.app.api import auth, claims, reasoning, review, admin, health
+from backend.app.api import (
+    auth, claims, reasoning, review, admin, health, evidence,
+    analytics, mock_agents, investigate, adaptation, report
+)
 
 # Create DB schema
 Base.metadata.create_all(bind=engine)
@@ -64,6 +67,12 @@ app.include_router(claims.router)
 app.include_router(reasoning.router)
 app.include_router(review.router)
 app.include_router(admin.router)
+app.include_router(evidence.router)
+app.include_router(analytics.router)
+app.include_router(mock_agents.router)
+app.include_router(investigate.router)
+app.include_router(adaptation.router)
+app.include_router(report.router)
 
 # Mount local storage securely for file previews (under auth or static in demo mode)
 storage_path = Path(__file__).resolve().parent.parent.parent / "storage"
