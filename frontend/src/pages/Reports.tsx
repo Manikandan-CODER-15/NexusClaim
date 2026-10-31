@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Download, CheckCircle2, 
-  ArrowLeft, Printer 
+  ArrowLeft, Printer, RefreshCw, AlertCircle
 } from 'lucide-react';
-import { api } from '../api';
+import { api, auth } from '../api';
 import type { Claim } from '../api';
 
 const Reports: React.FC = () => {
@@ -14,8 +14,10 @@ const Reports: React.FC = () => {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [selectedClaimId, setSelectedClaimId] = useState<string>(claimId || '');
   const [generating, setGenerating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [reportData, setReportData] = useState<any | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     api.get<Claim[]>('/api/claims').then((res) => {
@@ -41,24 +43,89 @@ const Reports: React.FC = () => {
   };
 
   useEffect(() => {
-    if (selectedClaimId) checkExistingReport(selectedClaimId);
+    if (selectedClaimId) {
+      setErrorMsg(null);
+      setStatusMsg(null);
+      checkExistingReport(selectedClaimId);
+    }
   }, [selectedClaimId]);
 
   const handleGenerate = async () => {
     if (!selectedClaimId) return;
     setGenerating(true);
     setStatusMsg(null);
+    setErrorMsg(null);
 
     try {
       const res: any = await api.post(`/api/claims/${selectedClaimId}/report`, {});
       setReportData(res);
-      setStatusMsg(`PDF Report dossier successfully rendered: ${res.filename}`);
+      setStatusMsg(`PDF Report dossier successfully compiled: ${res.filename}`);
     } catch (err: any) {
-      alert(`Report compilation failed: ${err.message}`);
+      setErrorMsg(`Report compilation failed: ${err.message}`);
     } finally {
       setGenerating(false);
     }
   };
+
+  const handleDownload = async () => {
+    if (!selectedClaimId) return;
+    setDownloading(true);
+    setErrorMsg(null);
+
+    try {
+      const token = auth.getToken();
+      const url = `/api/claims/${selectedClaimId}/report/download`;
+      
+      const response = await fetch(url, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        let errText = `Failed to download PDF (${response.status})`;
+        try {
+          const errJson = await response.json();
+          if (errJson.detail) errText = errJson.detail;
+        } catch {
+          // ignore
+        }
+        throw new Error(errText);
+      }
+
+      // Convert response to Blob
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // Extract filename from header or fallback
+      let filename = `NexusClaim_Report_${selectedClaimId.slice(0, 8)}.pdf`;
+      const disposition = response.headers.get('Content-Disposition');
+      if (disposition && disposition.includes('filename=')) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) filename = match[1];
+      }
+
+      // Trigger browser download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      setStatusMsg(`Downloaded ${filename} successfully.`);
+    } catch (err: any) {
+      setErrorMsg(`Download error: ${err.message}. Please click "Compile PDF Dossier" first if not yet generated.`);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const currentToken = auth.getToken();
+  const directDownloadUrl = selectedClaimId && currentToken 
+    ? `/api/claims/${selectedClaimId}/report/download?token=${encodeURIComponent(currentToken)}` 
+    : '#';
 
   return (
     <div className="space-y-6">
@@ -80,6 +147,7 @@ const Reports: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
+          <label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Select Claim:</label>
           <select
             value={selectedClaimId}
             onChange={(e) => setSelectedClaimId(e.target.value)}
@@ -95,9 +163,16 @@ const Reports: React.FC = () => {
       </div>
 
       {statusMsg && (
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-emerald-800 dark:text-emerald-300 text-xs flex items-center space-x-2">
-          <CheckCircle2 size={16} className="shrink-0" />
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center space-x-2">
+          <CheckCircle2 size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span>{statusMsg}</span>
+        </div>
+      )}
+
+      {errorMsg && (
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs flex items-center space-x-2">
+          <AlertCircle size={16} className="shrink-0 text-rose-600 dark:text-rose-400" />
+          <span>{errorMsg}</span>
         </div>
       )}
 
@@ -116,19 +191,28 @@ const Reports: React.FC = () => {
             disabled={generating}
             className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow transition disabled:opacity-50 flex items-center space-x-2"
           >
-            <Printer size={15} />
+            {generating ? <RefreshCw size={15} className="animate-spin" /> : <Printer size={15} />}
             <span>{generating ? 'Compiling PDF...' : 'Compile PDF Dossier'}</span>
+          </button>
+
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow transition disabled:opacity-50 flex items-center space-x-2"
+          >
+            {downloading ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />}
+            <span>{downloading ? 'Downloading...' : 'Download PDF'}</span>
           </button>
 
           {reportData && (
             <a
-              href={`/api/claims/${selectedClaimId}/report/download`}
+              href={directDownloadUrl}
               target="_blank"
               rel="noreferrer"
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center space-x-2"
+              className="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline"
+              title="Open direct link in browser tab"
             >
-              <Download size={15} />
-              <span>Download PDF</span>
+              Direct Link
             </a>
           )}
         </div>
