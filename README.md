@@ -87,3 +87,51 @@ TCS AI FINAL/
 └── README.md                # Documentation
 ```
 
+
+
+---
+
+## 5. Database and Demo Data
+
+All demo data is marked **SYNTHETIC DEMO DATA** with fictional names, vehicle registration numbers, and addresses.
+
+### 1. Initialize Tables (Step 1)
+Creates all 18 SQLAlchemy tables with UUID keys, foreign key constraints, timestamps, and indexes:
+```powershell
+cd "d:\Downloads\TCS AI FINAL"
+.\backend\venv\Scripts\python.exe -m backend.app.database.init_db
+```
+
+### 2. Generate Synthetic Demo Documents & Data (Step 2)
+Generates 6 synthetic PDF documents in `storage/demo/`, `historical_claims.csv` (300 rows) and `policy_clauses.json`:
+```powershell
+cd "d:\Downloads\TCS AI FINAL"
+.\backend\venv\Scripts\python.exe -m backend.scripts.generate_demo_data
+```
+
+> **Photos Note**: Place your test image files in `storage/demo/`:
+> - `01_front_damage.jpg`
+> - `02_rear_side_damage.jpg`
+> - `03_front_damage_duplicate.jpg` (identical to 01 for duplicate hash detection)
+> - `04_spare.jpg`
+
+### 3. Seed the Database (Step 3 - Idempotent)
+Populates 5 roles, 8 bcrypt-hashed users, 4 insurance categories, 3 policies, 13 claims (1 MAIN demo claim + 12 filler claims for dashboard metrics), evidence metadata with SHA-256 hashes, and loads 300 rows into `historical_claims`:
+```powershell
+cd "d:\Downloads\TCS AI FINAL"
+.\backend\venv\Scripts\python.exe -m backend.scripts.seed_db
+```
+
+### 4. Verify Database Integrity (Step 4)
+Runs 7 automated PASS/FAIL checks verifying table counts, bcrypt hashes, baseline isolation (zero fake AI findings), and main claim evidence:
+```powershell
+cd "d:\Downloads\TCS AI FINAL"
+.\backend\venv\Scripts\python.exe -m backend.scripts.verify_db
+```
+
+### 5. Reset Demo Data
+Deletes only synthetic demo records (`is_demo = True`) and re-seeds clean baseline data without touching real records:
+```powershell
+cd "d:\Downloads\TCS AI FINAL"
+.\backend\venv\Scripts\python.exe -m scripts.reset_demo
+```

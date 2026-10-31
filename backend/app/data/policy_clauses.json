@@ -1,0 +1,50 @@
+[
+  {
+    "clause_id": "1.1",
+    "section": "Coverage",
+    "title": "Coverage",
+    "text": "This policy covers accidental damage to the insured vehicle, third-party liability, personal accident cover for the owner-driver, and damage caused by fire, theft, natural calamity, or riot. Coverage extends to the vehicle body, engine, electrical and mechanical parts, and factory-fitted accessories."
+  },
+  {
+    "clause_id": "2.1",
+    "section": "Exclusions",
+    "title": "Exclusion -- Consequential Loss",
+    "text": "Any consequential loss, depreciation, wear and tear, mechanical or electrical breakdown, failures, or breakages shall not be covered under this policy."
+  },
+  {
+    "clause_id": "2.2",
+    "section": "Exclusions",
+    "title": "Exclusion -- Intoxication",
+    "text": "Loss or damage arising while the vehicle is driven by a person under the influence of intoxicating liquor or drugs is excluded."
+  },
+  {
+    "clause_id": "2.3",
+    "section": "Exclusions",
+    "title": "Exclusion -- Invalid Licence",
+    "text": "Loss or damage arising while the vehicle is driven by a person who does not hold a valid and effective driving licence is excluded."
+  },
+  {
+    "clause_id": "2.4",
+    "section": "Exclusions",
+    "title": "Exclusion -- Non-Disclosed Modifications",
+    "text": "Damage to any non-factory-fitted accessory, modification, or alteration that was not disclosed to the insurer at the time of policy inception is excluded."
+  },
+  {
+    "clause_id": "3.1",
+    "section": "Financial Terms",
+    "title": "Deductible",
+    "text": "A mandatory deductible of Rs 5,000 (Rupees Five Thousand only) shall be borne by the policyholder for each and every claim."
+  },
+  {
+    "clause_id": "3.2",
+    "section": "Financial Terms",
+    "title": "Coverage Limit",
+    "text": "The maximum liability of the insurer under this policy shall not exceed Rs 3,00,000 (Rupees Three Lakh only) per claim, inclusive of all repair costs, parts, and labour charges."
+  },
+  {
+    "clause_id": "4.1",
+    "section": "Claims Procedure",
+    "title": "Notification Period",
+    "text": "The policyholder must notify the insurer of any incident giving rise to a claim within 7 (seven) calendar days of the date of incident. Failure to notify within this period may result in denial or reduction of the claim."
+  }
+]

@@ -57,14 +57,22 @@ class Policy(Base):
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
     policy_number = Column(String(100), unique=True, nullable=False, index=True)
+    holder_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
     title = Column(String(255), nullable=False)
     category = Column(String(50), nullable=False, index=True)  # motor, health, property, commercial
     coverage_limit = Column(Float, nullable=False, default=0.0)
     deductible = Column(Float, nullable=False, default=0.0)
     terms_text = Column(Text, nullable=True)
     clauses_json = Column(Text, nullable=True)  # JSON list of clauses
+    pdf_path = Column(String(500), nullable=True)  # path to policy PDF in storage
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
+    is_demo = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    holder = relationship("User")
 
 class Claim(Base):
     __tablename__ = "claims"
@@ -82,6 +90,7 @@ class Claim(Base):
     estimated_amount = Column(Float, nullable=False, default=0.0)
     assigned_investigator_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
     metadata_json = Column(Text, nullable=True)  # arbitrary extra metadata
+    is_demo = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
@@ -110,6 +119,7 @@ class Evidence(Base):
     category = Column(String(50), nullable=False, index=True)  # photo, policy_doc, statement, repair_estimate, police_report, other
     source_label = Column(String(100), nullable=True)
     metadata_json = Column(Text, nullable=True)
+    is_demo = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     # Relationships
@@ -287,3 +297,18 @@ class SystemSetting(Base):
     description = Column(String(255), nullable=True)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
+class HistoricalClaim(Base):
+    """Historical claims data for Anomaly Agent statistical analysis.
+    Loaded from historical_claims.csv — SYNTHETIC DEMO DATA only."""
+    __tablename__ = "historical_claims"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    claim_id = Column(String(50), nullable=False, index=True)
+    incident_date = Column(DateTime, nullable=False)
+    report_date = Column(DateTime, nullable=False)
+    days_to_report = Column(Integer, nullable=False)
+    estimate_amount = Column(Float, nullable=False)
+    policy_age_days = Column(Integer, nullable=False)
+    claim_category = Column(String(50), nullable=False, index=True)
+    prior_claims_count = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
